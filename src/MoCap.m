@@ -11,10 +11,12 @@ classdef MoCap <handle
         % -----------------------------------------------------------------
         function self = MoCap(varargin)
         % Class constructor
-        %       MoCap(filepath)
+        %       MoCap(database, filepath)
         %       MoCap(X,Y,Z,fs)        
         %
         % INPUTs:
+        %       database (N_by_1 char): name of databases
+        %                               'BML', 'MHAD'
         %       filepath (N_by_1 char): directory of file        
         %       X, Y, Z (Ntime_by_Nmarkers double): markers xyz location (m)
         %       fs (1_by_1 double): sampling frequency (Hz)
@@ -22,15 +24,24 @@ classdef MoCap <handle
         % OUTPUTS:
         %       MoCap object
 
-        if nargin == 1
-            filepath = varargin{1};
-            if strcmp(filepath(end-2:end),'ptd')
-                database = 'BML';
-            elseif strcmp(filepath(end-2:end),'txt')
-                database = 'MHAD';
+        if nargin == 2
+            database = varargin{1};
+            filepath = varargin{2};  
+            
+            % get filetype of given database
+            switch database
+                case 'BML'
+                    filetype = '.ptd';
+                case 'MHAD'
+                    filetype = '.txt';                    
+            end            
+            if ~strcmp( filepath(end-3:end), filetype)
+                filepath = [filepath, filetype];
             end
+            
+            % Read data
             [ self.X, self.Y, self.Z, self.fs ] = feval( ...
-                ['readMoCap','_',database], filepath);
+                ['readMoCap','_',database], filepath);            
             
         elseif nargin == 4
             self.X = varargin{1};

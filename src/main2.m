@@ -4,13 +4,15 @@
 close all; clear all; clc;
 
 %% Initialization --> modify 
-% filename = 'ale_walk_nu_1_fin.ptd';                                         % BML
-filename = 'moc_s01_a01_r01.txt';                                            % MHAD
+
+% database = 'BML';  filename = 'ale_walk_nu_1_fin';                          
+database = 'MHAD'; filename = 'moc_s01_a01_r01';
+                    
 dataFolder_path = '../data';
 resultsFolder_path = '../results';
 
 %% Read MoCap
-mocap = MoCap([dataFolder_path,'/',filename]);
+mocap = MoCap(database, [dataFolder_path,'/',filename]);
 % mocap.play();                                                               % Play MoCap data
 
 %% MoCap: get motions
