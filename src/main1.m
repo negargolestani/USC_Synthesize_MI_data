@@ -4,16 +4,13 @@
 close all; clear all; clc;
 
 %% Initialization --> modify 
-
 filename = '16';
-vide_path = '../data/Video';
-vna_path = '../data/VNA';
-
-resultsFolder_path = '../results/main1';
+dataFolder_path = '../data';
+resultsFolder_path = '../results';
 
 %% Read files
-video = Video([vide_path, '/', filename, '.MOV']);                          % load Video
-vna = VNA([vna_path, '/', filename, '.s2p']);                               % VNA (timeseries)
+video = Video([dataFolder_path, '/', filename, '.MOV']);                    % load Video
+vna = VNA([dataFolder_path, '/', filename, '.s2p']);                        % VNA (timeseries)
 
 %% Video: get motions
 motions = video.get_motions( ...                                            % Get motions: translation and rotation of coils in the video

@@ -4,15 +4,13 @@
 close all; clear all; clc;
 
 %% Initialization --> modify 
-
 % filename = 'ale_walk_nu_1_fin.ptd';                                         % BML
 filename = 'moc_s01_a01_r01.txt';                                            % MHAD
-mocap_path = '../data/MoCap';
-
-resultsFolder_path = '../results/main2';
+dataFolder_path = '../data';
+resultsFolder_path = '../results';
 
 %% Read MoCap
-mocap = MoCap([mocap_path,'/',filename]);
+mocap = MoCap([dataFolder_path,'/',filename]);
 % mocap.play();                                                               % Play MoCap data
 
 %% MoCap: get motions
@@ -62,4 +60,4 @@ end
 
 %% Save results
 save_results(synthMI_tscol, resultsFolder_path, filename);
-% print(gcf, [resultsFolder_path,'/',filename], '-dtiff', '-r350');                        
+print(gcf, [resultsFolder_path,'/',filename], '-dtiff', '-r350');                        
