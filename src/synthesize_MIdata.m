@@ -9,7 +9,7 @@ function [ synthMI ] = synthesize_MIdata(MIsys, motions)
 %
 %   OUTPUTS:
 %          synthMI (1_by_Ntx cell array of timeseries): contains synthesize
-%          MI data generated correspond to each TX coil (|S21(dB)|)
+%          MI data generated correspond to each TX coil (S21(dB))
 
 Ntx = min( length(MIsys.TX), length(motions)-1);
 Nsamples = motions{1}.Length;
@@ -43,17 +43,17 @@ end
 % collection of timeseries object
 time = motions{1}.Time;
 synthMI = cell(1,Ntx);
-for n = 1:Ntx
+for n = 1:Ntx    
     synthMI{n} = timeseries( ...
-        abs(fillmissing( S21_dB(:,n), 'linear')), ...                            % Clean data: remove NaNs
+        fillmissing( S21_dB(:,n), 'linear'), ...                            % Clean data: remove NaNs
         time, ...
         'Name', ['TX_',num2str(n)] );
-    synthMI{n}.DataInfo.Units = ' |S_21 (dB)| ';
+    synthMI{n}.DataInfo.Units = 'S_21 (dB)';
     
     % Plot
     % figure, plot(synthMI{n}, 'LineWidth', 2);
     % xlim([synthMI{n}.TimeInfo.Start, synthMI{n}.TimeInfo.End]);
 end
-synthMI = tscollection(synthMI, 'Name','Synthetic MIdata');
+synthMI = tscollection(synthMI, 'Name','Synthetic MI Data');
 
 end

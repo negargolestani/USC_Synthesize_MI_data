@@ -37,4 +37,7 @@ end
 corr = corr(sortIdx);
 lag = lag_range(corr == max(corr));
 
+
+synced_data1 = data1;
+synced_data1.Time = synced_data1.Time - lag;
 end

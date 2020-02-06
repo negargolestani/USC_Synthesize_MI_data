@@ -1,27 +1,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%% Synthesize MI data - MoCap %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%% Synthesize MI Motion Data (MoCap) %%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% MoCap data Reference
-%
-%   * BML Library *
-%   "Ma, Y., Paterson, & Pollick, F.E. (2006). A motion-capture library for 
-%   the study of identity, gender, and emotion perception from biological 
-%   motion. Behavior Research Methods, Instruments, & Computers, 38,
-%   134-141."   
-%   URL: http://paco.psy.gla.ac.uk/index.php/res/download-data
-
-%   * MHAD Library *
-%   " F. Ofli, R. Chaudhry, G. Kurillo, R. Vidal and R. Bajcsy. Berkeley 
-%   MHAD: A Comprehensive Multimodal Human Action Database. In Proceedings
-%   of the IEEE Workshop on Applications on Computer Vision (WACV), 2013."
-%   URL: https://tele-immersion.citris-uc.org/berkeley_mhad
-
 close all; clear all; clc;
-%% Read files
-mocap = MoCap('./data/ale_walk_nu_1_fin.ptd');                              % BML 
-% mocap = MoCap('./data/moc_s01_a01_r01.txt');                                % MHAD
 
+%% Initialization --> modify 
+
+% filename = 'ale_walk_nu_1_fin.ptd';                                         % BML
+filename = 'moc_s01_a01_r01.txt';                                            % MHAD
+mocap_path = '../data/MoCap';
+
+resultsFolder_path = '../results/main2';
+
+%% Read MoCap
+mocap = MoCap([mocap_path,'/',filename]);
 % mocap.play();                                                               % Play MoCap data
 
 %% MoCap: get motions
@@ -52,7 +43,7 @@ for n = 1:Ntx
     synthMI = synthMI_tscol.get(synthMI_tscol.gettimeseriesnames{n});       % synthetic MIdata (timeseries)
     
     subplot(Ntx,1,n);
-    plot( synthMI , ...
+    plot(synthMI.Time, abs(synthMI.Data) , ...
         'LineWidth', LW, ...
         'DisplayName', ['TX_{',num2str(n),'}'],...        
         'Color', CM(n,:) ...
@@ -68,3 +59,7 @@ for n = 1:Ntx
         xlabel('');
     end  
 end
+
+%% Save results
+save_results(synthMI_tscol, resultsFolder_path, filename);
+% print(gcf, [resultsFolder_path,'/',filename], '-dtiff', '-r350');                        

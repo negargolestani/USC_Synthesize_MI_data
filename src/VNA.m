@@ -16,10 +16,10 @@ S21 = data{4}+1i*data{5};
 S21_dB =  20*log10( abs(S21)) + 1i* (angle(S21)) ;
 
 vna = timeseries( ...
-    abs(fillmissing( S21_dB, 'linear')), ...                               % Clean data: remove NaNs
+    fillmissing( S21_dB, 'linear'), ...                                     % Clean data: remove NaNs
     time, ...
     'Name', 'VNA measurement');
-vna.DataInfo.Units = ' |S_21 (dB)| ';
+vna.DataInfo.Units = ' S_21 (dB) ';
 
 % Plot
 % figure, plot(vna, 'LineWidth', 2);
