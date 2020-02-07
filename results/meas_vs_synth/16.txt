@@ -1,4 +1,4 @@
-Time (seconds)	Synchronized Synthetic MI Data (S_21 (dB))	
+Time (seconds)	Synchronized Synthetic MI Data (dB)	
 0.0333	-39.7086+0.7896i
 0.0667	-39.7164+0.7896i
 0.1000	-39.6684+0.7896i

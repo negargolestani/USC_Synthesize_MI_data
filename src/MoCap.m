@@ -1,5 +1,5 @@
-classdef MoCap <handle
-    % This class represents Motion Capture (MoCap) data
+classdef MOCAP <handle
+    % This class represents Motion Capture (MOCAP) data
     
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         X, Y, Z
@@ -9,10 +9,10 @@ classdef MoCap <handle
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % -----------------------------------------------------------------
-        function self = MoCap(varargin)
+        function self = MOCAP(varargin)
         % Class constructor
-        %       MoCap(database, filepath)
-        %       MoCap(X,Y,Z,fs)        
+        %       MOCAP(database, filepath)
+        %       MOCAP(X,Y,Z,fs)        
         %
         % INPUTs:
         %       database (N_by_1 char): name of databases
@@ -22,26 +22,13 @@ classdef MoCap <handle
         %       fs (1_by_1 double): sampling frequency (Hz)
         %
         % OUTPUTS:
-        %       MoCap object
+        %       MOCAP object
 
         if nargin == 2
             database = varargin{1};
-            filepath = varargin{2};  
-            
-            % get filetype of given database
-            switch database
-                case 'BML'
-                    filetype = '.ptd';
-                case 'MHAD'
-                    filetype = '.txt';                    
-            end            
-            if ~strcmp( filepath(end-3:end), filetype)
-                filepath = [filepath, filetype];
-            end
-            
-            % Read data
+            filepath = varargin{2};                          
             [ self.X, self.Y, self.Z, self.fs ] = feval( ...
-                ['readMoCap','_',database], filepath);            
+                ['read',database], filepath);                               % Read data
             
         elseif nargin == 4
             self.X = varargin{1};
@@ -53,7 +40,7 @@ classdef MoCap <handle
         end
         % -----------------------------------------------------------------
         function [ ] = play(self)
-            % This function shows MoCap data in 3D
+            % This function shows MOCAP data in 3D
             %
             % INPUTS:
             %        None
@@ -83,16 +70,16 @@ classdef MoCap <handle
             %        M (1_by_1 double): downsample rate 
             %
             % OUTPUTS:
-            %       new_self (1_by_1 MoCap obj): containing modified data
+            %       new_self (1_by_1 MOCAP obj): containing modified data
             
-            new_self = MoCap( ...
+            new_self = MOCAP( ...
                 self.X(1:M:end,:), ...
                 self.Y(1:M:end,:), ...
                 self.Z(1:M:end,:), ...
                 self.fs/M );
         end
         % -----------------------------------------------------------------
-        function [ new_self ] = reshape_markers(self, markersIDX)
+        function [ new_self ] = reshapemarkers(self, markersIDX)
             % This function re-arrange/merge idxs of markers  
             %
             % INPUTS:
@@ -100,17 +87,17 @@ classdef MoCap <handle
             %        new_idx corresponding to each new idx 
             %
             % OUTPUTS:
-            %       new_self (1_by_1 MoCap obj): containing modified data
+            %       new_self (1_by_1 MOCAP obj): containing modified data
             
             for n = 1:length(markersIDX)
                 x(:,n) = nanmean( self.X(:, markersIDX{n}), 2);
                 y(:,n) = nanmean( self.Y(:, markersIDX{n}), 2);
                 z(:,n) = nanmean( self.Z(:, markersIDX{n}), 2);
             end
-            new_self = MoCap(x, y, z, self.fs);
+            new_self = MOCAP(x, y, z, self.fs);
         end
         % -----------------------------------------------------------------
-        function [ motions ] = get_motion(self, bones_desc)
+        function [ motions ] = getmotion(self, bones_desc)
             % This function returns movement of requestd bones
             %
             % Inputs:
@@ -157,4 +144,91 @@ classdef MoCap <handle
         end
         % -----------------------------------------------------------------
     end
+end
+
+
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [ X, Y, Z, fs ] = readBML(filepath)
+% This function reads data of BML library and returns 15 markers. 
+%
+% INPUT:
+%       filepath (N_by_1 char): file directory
+
+% OUTPUT:
+%       X,Y,Z (Ntime_by_Nmarkers double): location of markers (m)
+%       fs (1_by_1 double): sampling frequency (Hz)
+%
+%   * BML Library *
+%   "Ma, Y., Paterson, & Pollick, F.E. (2006). A motion-capture library for 
+%   the study of identity, gender, and emotion perception from biological 
+%   motion. Behavior Research Methods, Instruments, & Computers, 38,
+%   134-141."   
+%   URL: http://paco.psy.gla.ac.uk/index.php/res/download-data
+
+
+filetype = '.ptd';
+if ~strcmp( filepath(end-3:end), filetype)
+    filepath = [filepath, filetype];
+end
+           
+file = importdata(filepath);
+Nt = file(1);
+Nd = 45;
+data = file(2:end);
+data = reshape(data(1:Nt*Nd),Nd,Nt)';
+data = data * 0.0254;                                                       % convert data from inch to meter
+data = fillmissing( data, 'linear');                                        % clean data: remove NaNs
+
+X = data(:,1:3:end);
+Y = data(:,2:3:end);
+Z = data(:,3:3:end);
+
+X = fillmissing(X,'linear');
+Y = fillmissing(Y,'linear');
+Z = fillmissing(Z,'linear');
+fs = 60;
+end
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [ X, Y, Z, fs ] = readMHAD(filepath)
+% This function reads data of MHAD library and returns all markers. 
+%
+% INPUT:
+%       fileName_action (N_by_1 char): directory of file
+
+% OUTPUT:
+%       X,Y,Z (Ntime_by_Nmarkers double): location of markers (m)
+%       fs (1_by_1 double): sampling frequency (Hz)
+%
+%   * MHAD Library *
+%   " F. Ofli, R. Chaudhry, G. Kurillo, R. Vidal and R. Bajcsy. Berkeley 
+%   MHAD: A Comprehensive Multimodal Human Action Database. In Proceedings
+%   of the IEEE Workshop on Applications on Computer Vision (WACV), 2013."
+%   URL: https://tele-immersion.citris-uc.org/berkeley_mhad
+
+filetype = '.txt';
+if ~strcmp( filepath(end-3:end), filetype)
+    filepath = [filepath, filetype];
+end
+
+file = load(filepath );                                                     % load mocap data
+data = file(:,1:end-2);                                                     % Downsample
+data = data * 1e-3;                                                         % convert data from cm to meter
+data = fillmissing( data, 'linear');                                        % clean data: remove NaNs
+Nt = size(data,1);
+
+for t = 1:Nt
+    dt = reshape(data(t,:), 3, []);    
+    for idx = find(sum(dt==0)==3)
+        dt(:,idx ) = [nan, nan, nan];                                       % NaN all zero values                         
+    end
+    Y(t,:) = dt(1,:);
+    Z(t,:) = dt(2,:);
+    X(t,:) = dt(3,:);    
+end
+X = fillmissing(X,'linear');
+Y = fillmissing(Y,'linear');
+Z = fillmissing(Z,'linear');
+fs = 480;
 end

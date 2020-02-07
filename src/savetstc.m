@@ -1,10 +1,12 @@
-function save_results(ts_tc, resultsFolder_path, filename)
-% This function saves timeseries data into given txt filePath
+function savetstc(ts_tc, resultsFolder_path, filename)
+% This function saves timeseries or collection of timeseries in the given 
+% resultsFolder_path with given filename
 %
 % INPUTS:
 %        ts_tc (1_by_1 timeseries.collection of timeseries): 
 %        timeseries of collecion of timeseries data want to save
 %        resultsFolder_path (N_by_1 char): path of results
+%        filename (N_by_1 char): name of saved file 
 %
 % OUTPUTS:
 %       Video object
@@ -31,9 +33,7 @@ end
 
 
 % Result folder path
-if ~exist(resultsFolder_path, 'dir')
-   mkdir(resultsFolder_path)
-end
+if ~exist(resultsFolder_path, 'dir'), mkdir(resultsFolder_path); end
 txt_filePath = [ resultsFolder_path, '/', filename, '.txt'];
 
 

@@ -1,4 +1,4 @@
-function [ ] = draw_line(object, L, color, LW)
+function [ ] = drawline(object, L, color, LW)
 % This function plots rotated line
 %
 % INPUTS:

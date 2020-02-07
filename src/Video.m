@@ -1,4 +1,4 @@
-classdef Video
+classdef VIDEO
     
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         vid                                                                 % VideoReader
@@ -6,15 +6,15 @@ classdef Video
     
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % -----------------------------------------------------------------
-        function [ self ] = Video(filepath)
+        function [ self ] = VIDEO(filepath)
             % Class constructor
-            %       Video(filepath)
+            %       VIDEO(filepath)
             %
             % INPUTS:
             %        filepath (N_by_1 char): directory of video file
             %
             % OUTPUTS:
-            %       Video object
+            %       VIDEO object
             
             self.vid = VideoReader(filepath);
         end
@@ -26,11 +26,11 @@ classdef Video
             %       None
             %
             % OUTPUTS:
-            %       frame (1_by_1 Frame obj): next frame of video
+            %       frame (1_by_1 FRAME obj): next frame of video
             
             if hasFrame(self.vid)
                 frame = readFrame(self.vid);
-                frame = Frame(frame);
+                frame = FRAME(frame);
             else
                 frame = false;
             end
@@ -72,19 +72,19 @@ classdef Video
             %       meter
 
             frame  = self.next();
-            calLabel = frame.get_objects( calLabel_color );
+            calLabel = frame.getobjects( calLabel_color );
             calLabel = calLabel{1};
             
             theta = sign(calLabel.Orientation) * (90 - abs(calLabel.Orientation) );
-            new_frame = Frame( imrotate(frame.rgb, theta) );
-            new_calLabel = new_frame.get_objects( calLabel_color );
+            new_frame = FRAME( imrotate(frame.rgb, theta) );
+            new_calLabel = new_frame.getobjects( calLabel_color );
             new_calLabel = new_calLabel{1};
             calLabel_length = new_calLabel.BoundingBox(end);
             
             pix2m_scale = calLabel_length_m / calLabel_length;
         end
         % -----------------------------------------------------------------
-        function [ motions ] = get_motions(self, ...
+        function [ motions ] = getmotion(self, ...
                 Nmarker, marker_color, calLabel_color, calLabel_length_m)
             % This dunction returns motions of coils in the video
             %
@@ -105,7 +105,7 @@ classdef Video
             
             while hasFrame(self.vid)
                 frame = self.next();
-                coils = frame.get_objects( marker_color);
+                coils = frame.getobjects( marker_color);
                 coils = coils{1};
                 xy = [coils.Centroid]; y = xy(2:2:end);
                 [~, sortedidx] = sort(y);

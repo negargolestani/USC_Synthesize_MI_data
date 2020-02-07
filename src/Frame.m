@@ -1,4 +1,4 @@
-classdef Frame < handle
+classdef FRAME < handle
     % This class represents a video frame
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         rgb                                                                 % RGB frame
@@ -6,22 +6,22 @@ classdef Frame < handle
     
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % -----------------------------------------------------------------
-        function [ self ] = Frame(rgb)
+        function [ self ] = FRAME(rgb)
             % Class constructor
-            %       Frame(rgb)
+            %       FRAME(rgb)
             %
             % INPUTS:
             %        rgb (N_by_M_by_3 double): rgb image
             %
             % OUTPUTS:
-            %       Frame object
+            %       FRAME object
             
             self.rgb = rgb;
         end
         % -----------------------------------------------------------------
-        function [ objects ] = get_objects(self, varargin)
+        function [ objects ] = getobjects(self, varargin)
             % This function extracts objects from the frame
-            %       self.get_objects(color_1, color_2, ...)
+            %       self.getobjects(color_1, color_2, ...)
             %
             % INPUTS:
             %       color_i (1_by_1 char): color of targeted object
@@ -74,8 +74,8 @@ classdef Frame < handle
                 for n = 1:Ncolors
                     objs_color_n = objects{n};
                     for m = 1:length(objs_color_n)
-                        draw_line(objs_color_n(m), L, color(n,:), LW);
-                        % draw_rectangle(objs_color_n(m), L, H, color(n,:), LW);
+                        drawline(objs_color_n(m), L, color(n,:), LW);
+                        % drawrectangle(objs_color_n(m), L, H, color(n,:), LW);
                     end
                 end
             end

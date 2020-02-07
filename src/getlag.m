@@ -1,4 +1,4 @@
-function [ lag ] = get_lag(data1, data2)
+function [ lag ] = getlag(data1, data2)
 % This function calculates lag of data1 respect to data2 using
 % cross correlation
 %

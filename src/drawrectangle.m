@@ -1,4 +1,4 @@
-function [ ] = draw_rectangle(object, L, H, color, LW)
+function [ ] = drawrectangle(object, L, H, color, LW)
 % This function plots rotated rectangles
 %
 % INPUTS:

@@ -1,5 +1,5 @@
-classdef Coil < handle
-    % This class represents an air-cored coils with circular cross-section
+classdef COIL < handle
+    % This class represents an air-cored COILs with circular cross-section
     % wire
       
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,10 +14,10 @@ classdef Coil < handle
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % -----------------------------------------------------------------
-        function self  = Coil(a, N, awg, varargin)
+        function self  = COIL(a, N, awg, varargin)
             % Class constructor
-            %               Coil(a, N, awg)
-            %               Coil(a, N, awg, loc, align)
+            %               COIL(a, N, awg)
+            %               COIL(a, N, awg, loc, align)
             %
             % INPUTS:
             %        a (1_by_1 double): coil radius (m)
@@ -28,7 +28,7 @@ classdef Coil < handle
             %        align (3_by_1 double): coil's surface normal alignment  
             %
             % OUTPUTS:
-            %       Coil object
+            %       COIL object
             
             if nargin >= 3
                 PHI_W = 1e-3*[ ...
@@ -64,7 +64,7 @@ classdef Coil < handle
             %      None
             %
             % OUTPUTS:
-            %       newself (Coil obj): copy of coil with all properties
+            %       newself (COIL obj): copy of coil with all properties
             
             newself = feval(class(self));                                   % instantiate new object of the same class.
             
@@ -72,34 +72,6 @@ classdef Coil < handle
             for i = 1:length(p)
                 newself.(p{i}) = self.(p{i});
             end
-        end
-        % ----------------------------------------------------------------
-        function [ L ] = selfInductance(self)
-            % This function returns self-inductance of coil
-            %
-            % OUTPUTS:
-            %       None
-            % 
-            % OUTPUTS:
-            %       L (1_by_1 double): self inductance of coil (H)
-            
-            mu0 = 4*pi*1e-7;
-            L = mu0*self.a*self.N.^2 .* ...
-                ( log(8*self.a./self.b) - 1/2 ...       
-                + (self.b./self.a).^2/32 .* ...
-                ( log(8*self.a./self.b)+1/4 )...
-                - (self.b./self.a).^4/1024 .* ...
-                ( log(8*self.a./self.b)-2/3 ) ...
-                + (self.b./self.a).^6.*10/131072 .* ...
-                ( log(8*self.a./self.b)-109/120 ) ...
-                - (self.b./self.a).^8*35/4194304 .* ...
-                ( log(8*self.a./self.b)-431/420 ) );                        % Coffin's Formula (for b~a)
-            
-%             L = (self.a*self.N)^2 / (22.9*self.a + 25.4*self.b)*1e-4 ;      % from River Publishers Series in Communications : Principles of Inductive Near Field Communications for Internet of Things
-%             L = mu0 * self.N^2 * self.a * ...
-%                 ( (1+self.phi_w^2/8/self.a^2)* ...   
-%                log(8*self.a/self.phi_w) ...
-%                + self.phi_w^2/24/self.a^2 - 1.75 );                         % Rayleigh and Niven's formula
         end
         % ----------------------------------------------------------------
         function [ Reff ] = effResistance(self, f)
@@ -136,12 +108,40 @@ classdef Coil < handle
             
         end
         % ----------------------------------------------------------------
+        function [ L ] = selfInductance(self)
+            % This function returns self-inductance of coil
+            %
+            % OUTPUTS:
+            %       None
+            % 
+            % OUTPUTS:
+            %       L (1_by_1 double): self inductance of coil (H)
+            
+            mu0 = 4*pi*1e-7;
+            L = mu0*self.a*self.N.^2 .* ...
+                ( log(8*self.a./self.b) - 1/2 ...       
+                + (self.b./self.a).^2/32 .* ...
+                ( log(8*self.a./self.b)+1/4 )...
+                - (self.b./self.a).^4/1024 .* ...
+                ( log(8*self.a./self.b)-2/3 ) ...
+                + (self.b./self.a).^6.*10/131072 .* ...
+                ( log(8*self.a./self.b)-109/120 ) ...
+                - (self.b./self.a).^8*35/4194304 .* ...
+                ( log(8*self.a./self.b)-431/420 ) );                        % Coffin's Formula (for b~a)
+            
+%             L = (self.a*self.N)^2 / (22.9*self.a + 25.4*self.b)*1e-4 ;      % from River Publishers Series in Communications : Principles of Inductive Near Field Communications for Internet of Things
+%             L = mu0 * self.N^2 * self.a * ...
+%                 ( (1+self.phi_w^2/8/self.a^2)* ...   
+%                log(8*self.a/self.phi_w) ...
+%                + self.phi_w^2/24/self.a^2 - 1.75 );                         % Rayleigh and Niven's formula
+        end
+        % ----------------------------------------------------------------
         function [ M ] = mutualInductance(self, coil_2, f)
             % This function returns mutual inductance between this coil and
             % given secondary coil
             %
             % INPUTS:
-            %       coil_2 (Coil obj): second coil 
+            %       coil_2 (COIL obj): second coil 
             %        f (1_by_1 double): frequency (Hz)
             %
             % OUTPUTS:
@@ -199,7 +199,7 @@ classdef Coil < handle
             self.align = new_align ./ sqrt(sum(new_align.^2));
         end
         % ----------------------------------------------------------------
-        function [ modelElements ] = get_modelElements(self, f)
+        function [ modelElements ] = getmodelelements(self, f)
             % This function returns elements of coils' circuit model
             %
             % INPUTS:
@@ -210,11 +210,11 @@ classdef Coil < handle
             %       all elements of circuit model
             %
             % NOTE:
-            %       <circuit element>: Resistor, Capacitor, Inductor             
+            %       <circuit element>: RESISTOR, CAPACITOR, INDUCTOR             
             
             modelElements = {...
-                Resistor('S', self.effResistance(f) ) ,...
-                Inductor('S', self.selfInductance() )...
+                RESISTOR('S', self.effResistance(f) ) ,...
+                INDUCTOR('S', self.selfInductance() )...
                 };
         end
         % ----------------------------------------------------------------

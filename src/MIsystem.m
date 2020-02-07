@@ -1,43 +1,38 @@
-classdef MIsystem < handle
-    % This class represents an MI system with one reciever (RX) and 
+classdef MISYSTEM < handle
+    % This class represents an MI system with one reciever (RX) and
     % multiple transmitters (TXs)
-
+    
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         f                                                                   % operating frequency
-        Z0                                                                  % charachteristic Impedance         
+        Z0                                                                  % charachteristic Impedance
         RX                                                                  % reciever
         TX = []                                                             % transmitter
-        
-        % These parameters are used to speed up the calculation
-        RX_abcd                                                             % ABCD-parameters of RX
-        TX_abcd = []                                                        % ABCD-parameters of TXs
     end
     
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % -----------------------------------------------------------------
-        function self = MIsystem(f, RX, varargin)
+        function self = MISYSTEM(f, RX, varargin)
             % Class constructor
-            %       Coil(f, RX)
-            %       Coil(f, RX, TX_1, TX_2, ...)
-            %       Coil(f, RX, TX, Ntx)
+            %       MISYSTEM(f, RX)
+            %       MISYSTEM(f, RX, TX_1, TX_2, ...)
+            %       MISYSTEM(f, RX, TX, Ntx)
             %
             % INPUTS:
             %       f (1_by_1 double): frequency (Hz)
             %       RX (1_by_1 Transceiver obj): receiver
             %       TX_n (1_by_1 Transceiver obj): transmitter
-            %       Ntx (1_by_1 double): number of transmitters 
+            %       Ntx (1_by_1 double): number of transmitters
             %
             % OUTPUTS:
-            %       MIsystem object 
+            %       MISYSTEM object
             
-            self.Z0 = 50;                                                    % charachteristic impedance 
+            self.Z0 = 50;                                                    % charachteristic impedance
             self.f = f;                                                      % operating frequency of MI system
-            self.set_RX(RX);                                                 % reciever
-            self.set_TX(varargin{:});                                        % transmitters
-            self.save_ABCD();                                                % save ABCD parameters of RX/TXs
+            self.setrx(RX);                                                  % reciever
+            self.settx(varargin{:});                                        % transmitters
         end
         % -----------------------------------------------------------------
-        function set_RX(self, RX)
+        function setrx(self, RX)
             % This function sets RX (transceiver) of MI system
             %
             % INPUTS:
@@ -47,148 +42,95 @@ classdef MIsystem < handle
             %       None
             
             self.RX = copy(RX);
+            self.RX.model(self.f);
         end
         % -----------------------------------------------------------------
-        function set_TX(self, varargin)
+        function settx(self, varargin)
             % This function sets TXs (transceiver) of MI system
             %
             % INPUTS:
             %        TX_i (1_by_1 Transceiver obj): transmitter
-            %        Ntx: number of transmitters             
+            %        Ntx: number of transmitters
             %
             % OUTPUTS:
-            %       None       
+            %       None
             
-            if nargin==3 && isnumeric(varargin{2})                          % Set same coil as TXs:  set_TX(Transceiver, 8)
+            if nargin==3 && isnumeric(varargin{2})                          % Set same coil as TXs:  settx(Transceiver, 8)
                 TXs = repelem(varargin{1},varargin{2});
-            else                                                            % Set different coils as TXs: set_TX(Transceiver_1, Transceiver_2, ...)
+            else                                                            % Set different coils as TXs: settx(Transceiver_1, Transceiver_2, ...)
                 TXs = [varargin{:}];
             end
             
             for n = 1:length(TXs)
                 self.TX = [self.TX, copy(TXs(n)) ];
+                self.TX(n).model(self.f);
             end
             
-        end
-        % -----------------------------------------------------------------        
-        function [ ] = save_ABCD(self)
-            % This function saves two-port network model of RX and TXs to
-            % speed up calculation
+        end                    
+        % -----------------------------------------------------------------
+        function [ synthData ] = synthesizedata(self, motions)
+            % This function synthesizes S21_dB of MI system with given
+            % motion data
             %
             % INPUTS:
-            %        None             
+            %        motions (1_by_Ncoils cell array of timeseries 
+            %        collection):contain Location of coils' center and 
+            %        Normal of the coil's surface 
+            %        NOTE: first coil (motions{1}) contains loc/aligns of RX
             %
             % OUTPUTS:
-            %       None  
+            %        synthMI (1_by_Ntx cell array of timeseries): contains synthesize
+            %        MI data generated correspond to each TX coil (S21(dB))            
+                        
+            Ntx = length(self.TX);
+            time = motions{1}.Time;            
+            Ntime = motions{1}.Length;
+            S21_dB = zeros(Ntime, Ntx);
             
-            RX_elements = [ ...
-                self.RX.matching, ...
-                self.RX.coil.get_modelElements(self.f)...
-                ] ;
-            self.RX_abcd = eye(2);
-            for e = 1:length(RX_elements)
-                self.RX_abcd = self.RX_abcd * RX_elements{e}.ABCD(self.f);
-            end
-            
-            for n = 1:length(self.TX)
-                coil_modelElements = self.TX(n).coil.get_modelElements(self.f);
+            for t = 1:Ntime
                 
-                if isempty(self.TX(n).matching)
-                    TX_elements = { coil_modelElements{end:-1:1} };
-                else                    
-                    TX_elements = { ...
-                        coil_modelElements{end:-1:1}, ...
-                        self.TX(n).matching{end:-1:1} };                   
-                end    
-                self.TX_abcd{n} = eye(2);
-                for e = 1:length(TX_elements)
-                    self.TX_abcd{n} = self.TX_abcd{n} * TX_elements{e}.ABCD(self.f);
+                % Move RX
+                Crx = getdatasamples(motions{1}.Location, t);
+                nrx = getdatasamples(motions{1}.Normal, t);
+                self.RX.move (Crx, nrx);                                    
+                
+                for n = 1:Ntx
+                    
+                     % Move TXs
+                    Ctx = getdatasamples(motions{n+1}.Location, t);
+                    ntx = getdatasamples(motions{n+1}.Normal, t);
+                    self.TX(n).move (Ctx, ntx);                            
+                    
+                    % Synthetic Data
+                    M = self.RX.coil.mutualInductance(...
+                        self.TX(n).coil, self.f);
+                    ms_abcd = INDUCTOR('S',-M).ABCD(self.f);
+                    mp_abcd = INDUCTOR('P', M).ABCD(self.f);
+                    
+                    % ABCD parameters -> S21 -> S21_dB
+                    abcd = ...
+                        self.RX.abcd * ...
+                        ms_abcd * mp_abcd * ms_abcd * ...
+                        self.TX(n).abcd;                    
+                    A = abcd(1,1); B = abcd(1,2); 
+                    C = abcd(2,1); D = abcd(2,2);
+                    S21 = 2 ./ ( A + B/self.Z0 + C*self.Z0 + D);
+                    S21_dB(t,n) = 20*log10( abs(S21)) + 1i* (angle(S21));
                 end
             end
-        end
-        % -----------------------------------------------------------------
-        function [ A, B, C, D ] = ABCD(self)
-            %  This function returns ABCD-parameters between RX and each TX 
-            %
-            % INPUTS:
-            %        None             
-            %
-            % OUTPUTS:
-            %       A, B, C, D (each one is 1_by_Ntx double): 
-            %       ABCD parameters of MI system 
-                    
-            for n = 1:length(self.TX)
-                M = self.RX.coil.mutualInductance(self.TX(n).coil, self.f);
-                ms_abcd = Inductor('S',-M).ABCD(self.f);
-                mp_abcd = Inductor('P', M).ABCD(self.f);
-                
-                abcd = ...
-                    self.RX_abcd * ...
-                    ms_abcd * mp_abcd * ms_abcd * ...
-                    self.TX_abcd{n};
-                
-                A(n) = abcd(1,1);
-                B(n) = abcd(1,2);
-                C(n) = abcd(2,1);
-                D(n) = abcd(2,2);
+            
+            % collection of timeseries object
+            synthData = cell(Ntx,1);
+            for n = 1:Ntx
+                synthData{n} = timeseries( ...
+                    fillmissing( S21_dB(:,n), 'linear'), ...                % Clean data: remove NaNs
+                    time, ...
+                    'Name', ['TX',num2str(n)] );
+                synthData{n}.DataInfo.Units = 'dB';
             end
+            synthData = tscollection(synthData, 'Name','Synthetic MI Data');
         end
-        % -----------------------------------------------------------------
-        function [ Z11, Z21, Z12, Z22 ] = Z(self)
-            %  This function returns Z-parameters between RX and each TX 
-            %
-            % INPUTS:
-            %        None             
-            %
-            % OUTPUTS:
-            %       Z11, Z21, Z12, Z22 (each one is 1_by_Ntx double): 
-            %       Z-parameters of MI system 
-            %                       
-            
-            [A, B, C, D] = self.ABCD( );
-            Z11 = A ./ C;
-            Z12 = ( A .* D - B .* C ) ./ C;
-            Z21 = 1 ./ C;
-            Z22 = D ./ C;
-        end
-        % -----------------------------------------------------------------
-        function [ S11, S21, S12, S22 ] = S(self)
-            %  This function returns S-parameters between RX and each TX 
-            %
-            % INPUTS:
-            %        None             
-            %
-            % OUTPUTS:
-            %       A, B, C, D (each one is 1_by_Ntx double): 
-            %       S-parameters of MI system 
-            
-            [A, B, C, D] = self.ABCD();
-            S11 = ( A + B/self.Z0 - C*self.Z0 - D) ./ ( A + B/self.Z0 + C*self.Z0 + D);
-            S12 = 2*( A.*D - B.*C ) ./ ( A + B/self.Z0 + C*self.Z0 + D);
-            S21 = 2 ./ ( A + B/self.Z0 + C*self.Z0 + D);
-            S22 = ( -A + B/self.Z0 - C*self.Z0 + D) ./ ( A + B/self.Z0 + C*self.Z0 + D);
-        end
-        % -----------------------------------------------------------------
-        function [ S11_dB, S21_dB, S12_dB, S22_dB ] = SdB(self)
-            %  This function returns SdB-parameters between RX and each TX 
-            %
-            % INPUTS:
-            %        None             
-            %
-            % OUTPUTS:
-            % OUTPUTS:
-            %       A, B, C, D (each one is 1_by_Ntx double): 
-            %       SdB-parameters of MI system )  
-            
-            [S11, S21, S12, S22] = self.S( );
-            S11_dB = 20*log10( abs(S11)) + 1i* (angle(S11));
-            S21_dB = 20*log10( abs(S21)) + 1i* (angle(S21));
-            S12_dB = 20*log10( abs(S12)) + 1i* (angle(S12));
-            S22_dB = 20*log10( abs(S22)) + 1i* (angle(S22));
-        end
-        % -----------------------------------------------------------------  
-                
+        % -----------------------------------------------------------------        
     end
-    
 end
 

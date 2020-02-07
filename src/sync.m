@@ -8,7 +8,7 @@ function [ synced_data1 ] = sync(data1, data2)
 %       synced_data1: synchronized data1 with data2 (timeseries)
 
 
-lag = get_lag(data1, data2);
+lag = getlag(data1, data2);
 
 time = data1.Time - lag;
 

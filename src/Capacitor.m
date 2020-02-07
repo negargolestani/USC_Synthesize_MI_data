@@ -1,5 +1,5 @@
-classdef Capacitor
-    % This class represents a capacitor
+classdef CAPACITOR
+    % This class represents a CAPACITOR
     
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         topology                                                            % toplogy of element
@@ -9,9 +9,9 @@ classdef Capacitor
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % -----------------------------------------------------------------
-        function self = Capacitor(topology, value)
+        function self = CAPACITOR(topology, value)
             % Class constructor
-            %       Capacitor(topology, value)
+            %       CAPACITOR(topology, value)
             %
             % INPUTS:
             %       topology (1_by_1 char): topology of element in circuit
@@ -20,7 +20,7 @@ classdef Capacitor
             %       value (double): value of element (F)
             %
             % OUTPUTS:
-            %       Capacitor object 
+            %       CAPACITOR object 
             
             self.topology = topology;
             self.value = value;

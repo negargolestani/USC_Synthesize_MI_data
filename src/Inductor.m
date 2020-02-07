@@ -1,4 +1,4 @@
-classdef Inductor 
+classdef INDUCTOR 
     % This class represents an inductor 
 
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -9,9 +9,9 @@ classdef Inductor
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % -----------------------------------------------------------------
-        function self = Inductor(topology, value)
+        function self = INDUCTOR(topology, value)
             % Class constructor
-            %       Inductor(topology, value)
+            %       INDUCTOR(topology, value)
             %
             % INPUTS:
             %       topology (1_by_1 char): topology of element in circuit
@@ -20,7 +20,7 @@ classdef Inductor
             %       value (double): value of element (H)
             %
             % OUTPUTS:
-            %       Inductor object 
+            %       INDUCTOR object 
             
             self.topology = topology;
             self.value = value;

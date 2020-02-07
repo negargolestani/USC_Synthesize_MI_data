@@ -1,4 +1,4 @@
-classdef Resistor
+classdef RESISTOR
     % This class represents a resistor
     
     properties %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -9,9 +9,9 @@ classdef Resistor
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % -----------------------------------------------------------------
-        function self = Resistor(topology, value)
+        function self = RESISTOR(topology, value)
             % Class constructor
-            %       Resistor(topology, value)
+            %       RESISTOR(topology, value)
             %
             % INPUTS:
             %       topology (1_by_1 char): topology of element in circuit
@@ -20,7 +20,7 @@ classdef Resistor
             %       value (1_by_1 double): value of element (ohm)
             %
             % OUTPUTS:
-            %       Resistor object
+            %       RESISTOR object
             
             self.topology = topology;
             self.value = value;
