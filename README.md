@@ -1,6 +1,6 @@
 # Synthesize_MI_data
-Comparision between measurements and synthetic data
-Generate synthetic MI motion data using MoCap data
+* Comparision between measurements and synthetic data
+* Generate synthetic MI motion data using MoCap data
 
 ### INPUTS: 
 
