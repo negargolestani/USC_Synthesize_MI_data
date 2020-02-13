@@ -7,35 +7,27 @@ classdef MOCAP <handle
     end
     
     methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
         % -----------------------------------------------------------------
-        function self = MOCAP(varargin)
+        function self = MOCAP(database, filepath)
         % Class constructor
         %       MOCAP(database, filepath)
-        %       MOCAP(X,Y,Z,fs)        
         %
         % INPUTs:
         %       database (N_by_1 char): name of databases
         %                               'BML', 'MHAD'
-        %       filepath (N_by_1 char): directory of file        
-        %       X, Y, Z (Ntime_by_Nmarkers double): markers xyz location (m)
-        %       fs (1_by_1 double): sampling frequency (Hz)
+        %       filepath (N_by_1 char): directory of file      
         %
         % OUTPUTS:
         %       MOCAP object
-
-        if nargin == 2
-            database = varargin{1};
-            filepath = varargin{2};                          
-            [ self.X, self.Y, self.Z, self.fs ] = feval( ...
-                ['read',database], filepath);                               % Read data
-            
-        elseif nargin == 4
-            self.X = varargin{1};
-            self.Y = varargin{2};
-            self.Z = varargin{3};
-            self.fs = varargin{4};
-        end
+        
+        [ X, Y, Z, self.fs ] = feval(['read',database], filepath);          % Read data
+        err = find( (X==0).* (Y==0).* (Z==0) );
+        X(err) = NaN;  Y(err) = NaN;  Z(err) = NaN;
+        for n = 1:size(X,2)
+            self.X(:,n) = fillmissing(X(:,n),'linear');
+            self.Y(:,n) = fillmissing(Y(:,n),'linear');
+            self.Z(:,n) = fillmissing(Z(:,n),'linear');
+        end        
         
         end
         % -----------------------------------------------------------------
@@ -63,7 +55,7 @@ classdef MOCAP <handle
             end
         end
         % -----------------------------------------------------------------
-        function [ new_self ] = downsample(self, M)
+        function [ ] = downsample(self, M)
             % This function re-arrange/merge idxs of markers  
             %
             % INPUTS:
@@ -72,15 +64,14 @@ classdef MOCAP <handle
             % OUTPUTS:
             %       new_self (1_by_1 MOCAP obj): containing modified data
             
-            new_self = MOCAP( ...
-                self.X(1:M:end,:), ...
-                self.Y(1:M:end,:), ...
-                self.Z(1:M:end,:), ...
-                self.fs/M );
+            self.X = self.X(1:M:end,:);
+            self.Y = self.Y(1:M:end,:);
+            self.Z = self.Z(1:M:end,:);
+            self.fs = self.fs/M ;
         end
         % -----------------------------------------------------------------
-        function [ new_self ] = reshapemarkers(self, markersIDX)
-            % This function re-arrange/merge idxs of markers  
+        function [ ] = merge_markers(self, markersIDX)
+            % This function re-arranges/merges idxs of markers  
             %
             % INPUTS:
             %        markersIDX (Nmarkers_by_1 cell array): containing
@@ -90,11 +81,14 @@ classdef MOCAP <handle
             %       new_self (1_by_1 MOCAP obj): containing modified data
             
             for n = 1:length(markersIDX)
-                x(:,n) = nanmean( self.X(:, markersIDX{n}), 2);
-                y(:,n) = nanmean( self.Y(:, markersIDX{n}), 2);
-                z(:,n) = nanmean( self.Z(:, markersIDX{n}), 2);
+                x(:,n) = fillmissing( ...
+                    nanmean( self.X(:, markersIDX{n}), 2), 'linear');
+                y(:,n) = fillmissing( ...
+                    nanmean( self.Y(:, markersIDX{n}), 2), 'linear');
+                z(:,n) = fillmissing( ...
+                    nanmean( self.Z(:, markersIDX{n}), 2), 'linear');
             end
-            new_self = MOCAP(x, y, z, self.fs);
+            self.X = x; self.Y = y; self.Z = z;
         end
         % -----------------------------------------------------------------
         function [ motions ] = getmotion(self, bones_desc)
@@ -145,11 +139,8 @@ classdef MOCAP <handle
         % -----------------------------------------------------------------
     end
 end
-
-
-
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [ X, Y, Z, fs ] = readBML(filepath)
+function [ X, Y, Z, fs ] = readBML(filepath, varargin)
 % This function reads data of BML library and returns 15 markers. 
 %
 % INPUT:
@@ -183,13 +174,9 @@ data = fillmissing( data, 'linear');                                        % cl
 X = data(:,1:3:end);
 Y = data(:,2:3:end);
 Z = data(:,3:3:end);
-
-X = fillmissing(X,'linear');
-Y = fillmissing(Y,'linear');
-Z = fillmissing(Z,'linear');
 fs = 60;
-end
 
+end
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ X, Y, Z, fs ] = readMHAD(filepath)
 % This function reads data of MHAD library and returns all markers. 
@@ -223,12 +210,10 @@ for t = 1:Nt
     for idx = find(sum(dt==0)==3)
         dt(:,idx ) = [nan, nan, nan];                                       % NaN all zero values                         
     end
-    Y(t,:) = dt(1,:);
+    X(t,:) = dt(1,:);
     Z(t,:) = dt(2,:);
-    X(t,:) = dt(3,:);    
+    Y(t,:) = dt(3,:);    
 end
-X = fillmissing(X,'linear');
-Y = fillmissing(Y,'linear');
-Z = fillmissing(Z,'linear');
 fs = 480;
+
 end

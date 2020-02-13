@@ -14,9 +14,16 @@ filename_list = lsfiles(mocapFolder_path, fileType);                        % Li
 %% Execute code for all given filenames in filename_list
 for n = 1:length(filename_list)    
     filename = filename_list{n};
+    mocapFile_path = [mocapFolder_path,'/',filename];
+
+    try
+        synthMI_tscol = synthmimotion(database, mocapFile_path);
+        savetstc(synthMI_tscol, resultsFolder_path, filename);               % save data
+%         print(gcf, [resultsFolder_path,'/',filename], '-dtiff', '-r350');   % Save plot
+   
+    catch ME
+        fprintf( 'Unsuccessful attempt: %s \n i = %d \t filename = %s \n %s \n ', ME.message, n, filename);
+        continue;  % Jump to next iteration
+    end
     
-    synthMI_tscol = synthmimotion( mocapFolder_path, filename, database);
-    
-    print(gcf, [resultsFolder_path,'/',filename], '-dtiff', '-r350');       % Save plot
-    savetstc(synthMI_tscol, resultsFolder_path, filename);                  % save data
 end
